@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Cart.belongsTo(models.User, { foreignKey: 'userId' })
-      Cart.hasMany(models.launched_p, { foreignKey: 'launchedPId' })
+      Cart.hasMany(models.Launched_p, { foreignKey: 'launchedPId' })
     }
   }
   Cart.init(
@@ -21,7 +21,8 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'Cart',
-      tableName: 'Carts'
+      tableName: 'Carts',
+      underscored: true
     }
   )
   return Cart
