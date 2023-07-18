@@ -12,12 +12,13 @@ module.exports = {
       user_id: {
         type: Sequelize.INTEGER
       },
-      launched_p: {
+      launched_p_id: {
         type: Sequelize.INTEGER
       },
-      launched_p_qty: {
+      qty: {
         type: Sequelize.INTEGER
       },
+
       created_at: {
         allowNull: false,
         type: Sequelize.DATE

@@ -18,6 +18,7 @@ module.exports = {
       stock: {
         type: Sequelize.INTEGER
       },
+      isSelling: { type: Sequelize.BOOLEAN },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE
