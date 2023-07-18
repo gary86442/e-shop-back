@@ -21,8 +21,9 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'Launched_p',
-      tableName: 'Launched_ps'
+      tableName: 'Launched_ps',
+      underscored: true
     }
   )
-  return Lunched_p
+  return Launched_p
 }

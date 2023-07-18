@@ -9,18 +9,21 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Shop.hasMany(models.Product, { foreignKey: 'shopId' })
+      Shop.belongsTo(models.User, { foreignKey: 'userId' })
     }
   }
   Shop.init(
     {
       name: DataTypes.STRING,
       description: DataTypes.STRING,
-      image: DataTypes.STRING
+      image: DataTypes.STRING,
+      user_id: DataTypes.INTEGER
     },
     {
       sequelize,
       modelName: 'Shop',
-      tableName: 'Shops'
+      tableName: 'Shops',
+      underscored: true
     }
   )
   return Shop
