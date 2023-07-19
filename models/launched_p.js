@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       product_id: DataTypes.INTEGER,
       price: DataTypes.INTEGER,
       stock: DataTypes.INTEGER,
-      isSelling: DataTypes.BOOLEAN
+      is_selling: { type: DataTypes.BOOLEAN, defaultValue: true }
     },
     {
       sequelize,
