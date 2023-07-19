@@ -17,6 +17,7 @@ module.exports = {
           product_id: product.id,
           price: faker.commerce.price({ min: 100, max: 999, dec: 0 }),
           stock: faker.number.int({ min: 10, max: 100 }),
+          is_selling: true,
           created_at: new Date(),
           updated_at: new Date()
         })
