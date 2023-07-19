@@ -10,14 +10,7 @@ module.exports = {
           type: queryInterface.sequelize.QueryTypes.SELECT
         }
       )
-      const orders = await queryInterface.sequelize.query(
-        'SELECT id FROM Orders',
-        {
-          type: queryInterface.sequelize.QueryTypes.SELECT
-        }
-      )
       const orderInfos = []
-      let count = 0
       for (let user of users) {
         const ships = await queryInterface.sequelize.query(
           `SELECT id FROM Ship_infos WHERE user_id = ${user.id} `,
@@ -27,34 +20,14 @@ module.exports = {
         )
 
         for (let i = 0; i < 3; i++) {
-          let ship_id = ships[Math.floor(Math.random() * ships.length)].id
-          orderInfos.push(
-            {
-              user_id: user.id,
-              ship_id: ship_id,
-              order_id: orders[count].id,
-              pay_status: false,
-              created_at: new Date(),
-              updated_at: new Date()
-            },
-            {
-              user_id: user.id,
-              ship_id: ship_id,
-              order_id: orders[count + 1].id,
-              pay_status: false,
-              created_at: new Date(),
-              updated_at: new Date()
-            },
-            {
-              user_id: user.id,
-              ship_id: ship_id,
-              order_id: orders[count + 2].id,
-              pay_status: false,
-              created_at: new Date(),
-              updated_at: new Date()
-            }
-          )
-          count += 3
+          let ship_info_id = ships[i].id
+          orderInfos.push({
+            user_id: user.id,
+            ship_info_id: ship_info_id,
+            pay_status: false,
+            created_at: new Date(),
+            updated_at: new Date()
+          })
         }
       }
 

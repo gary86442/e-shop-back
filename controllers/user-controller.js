@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const { User } = require('../models')
+const { User, Ship_info, Order_info, Order, Launched_p } = require('../models')
+const { getUser } = require('../helper/helper')
 const userController = {
   //* 消費者驗證
   register: async (req, res, next) => {
@@ -35,11 +36,9 @@ const userController = {
       next(err)
     }
   },
-  // register: (req,res,next)={},
   login: async (req, res, next) => {
     try {
       const { account, password } = req.body
-      console.log(account, password)
       if (!account | !password) throw new Error('帳號和密碼是必須要填寫！')
       const user = await User.findOne({ where: { account } })
       if (!user) throw new Error('使用者不存在')
@@ -56,6 +55,133 @@ const userController = {
         data: { token },
         user: userData
       })
+    } catch (err) {
+      next(err)
+    }
+  },
+  //* 消費者帳號管理
+  getProfile: async (req, res, next) => {
+    try {
+      const currentUser = getUser(req)
+      const userData = await User.findByPk(currentUser.id, {
+        attributes: { exclude: ['password'] }
+      })
+      return res.status(200).json({
+        status: 'success',
+        data: { user: userData }
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
+  putProfile: async (req, res, next) => {
+    //TODO 製作修改密碼：確認密碼 才可以修正。
+    const { name, email, address, phone } = req.body
+    const currentUser = getUser(req)
+    const userData = await User.findByPk(currentUser.id)
+    if (!userData) throw new Error('使用者不存在')
+    const newProfile = {
+      name: name || userData.name,
+      email: email || userData.email,
+      address: address || userData.address,
+      phone: phone || userData.phone
+    }
+    await userData.update(newProfile)
+    return res.status(200).json({
+      staus: 'success',
+      data: {
+        user: newProfile
+      }
+    })
+  },
+
+  //* Ship info 管理
+  getAddress: async (req, res, next) => {
+    try {
+      const currentUser = getUser(req)
+      const infos = await Ship_info.findAll({
+        where: { user_id: currentUser.id },
+        attributes: { exclude: ['userId'] }
+      })
+      //? 目前得到的結果會多一個userId的欄位?   先用語法排除
+
+      return res
+        .status(200)
+        .json({ status: 'success', data: { ship_infos: infos } })
+    } catch (err) {
+      next(err)
+    }
+  },
+  postAddress: async (req, res, next) => {
+    try {
+      const currentUser = getUser(req)
+      let { phone, address, name } = req.body
+      ;[phone, address, name] = [phone, address, name].map(item => item.trim())
+      if (!phone || !address || !name)
+        throw new Error('收件人、地址、電話都為必填項目')
+      const newInfo = await Ship_info.create({
+        user_id: currentUser.id,
+        phone,
+        name,
+        address
+      })
+      return res
+        .status(200)
+        .json({ status: 'success', data: { ship_infos: newInfo } })
+    } catch (err) {
+      next(err)
+    }
+  },
+  putAddress: async (req, res, next) => {
+    try {
+      const { addressId } = req.params
+      let { phone, address, name } = req.body
+      ;[phone, address, name] = [phone, address, name].map(item => item.trim())
+      if (!phone || !address || !name)
+        throw new Error('收件人、地址、電話都為必填項目')
+      const shipInfo = await Ship_info.findByPk(addressId)
+      if (!shipInfo) throw new Error('該寄件資訊不存在')
+      const newInfo = await shipInfo.update({
+        phone,
+        name,
+        address
+      })
+      return res
+        .status(200)
+        .json({ status: 'success', data: { ship_infos: newInfo } })
+    } catch (err) {
+      next(err)
+    }
+  },
+  deleteAddress: async (req, res, next) => {
+    try {
+      const { addressId } = req.params
+      const shipInfo = await Ship_info.findByPk(addressId)
+      if (!shipInfo) throw new Error('該寄件資訊不存在')
+      const deleteInfo = await shipInfo.destroy()
+      return res
+        .status(200)
+        .json({ status: 'success', data: { ship_infos: deleteInfo } })
+    } catch (err) {
+      next(err)
+    }
+  },
+
+  //* 查看購買紀錄
+  getUserOrders: async (req, res, next) => {
+    try {
+      const currentUser = getUser(req)
+      const orders = await Order_info.findAll({
+        where: { user_id: currentUser.id },
+        order: [['createdAt', 'DESC']],
+        attributes: { exclude: ['userId', 'shipInfoId'] },
+        include: {
+          model: Order,
+          attributes: ['id', 'launched_p_id', 'launched_p_qty'],
+          include: { model: Launched_p, attributes: ['id', 'price'] }
+        }
+      })
+      return res.status(200).json({ status: 'success', data: { orders } })
     } catch (err) {
       next(err)
     }
