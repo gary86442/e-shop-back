@@ -16,7 +16,6 @@ const checkUserRole = role => (req, res, next) => {
 const authenticated = (req, res, next) => {
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (user) {
-      // 因應測試檔，我們手動將驗證後找到的user塞到req中
       req.user = user.dataValues
       return next()
     }

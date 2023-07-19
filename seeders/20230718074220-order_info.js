@@ -27,11 +27,11 @@ module.exports = {
         )
 
         for (let i = 0; i < 3; i++) {
-          let ship_id = ships[Math.floor(Math.random() * ships.length)].id
+          let ship_info_id = ships[Math.floor(Math.random() * ships.length)].id
           orderInfos.push(
             {
               user_id: user.id,
-              ship_id: ship_id,
+              ship_info_id: ship_info_id,
               order_id: orders[count].id,
               pay_status: false,
               created_at: new Date(),
@@ -39,7 +39,7 @@ module.exports = {
             },
             {
               user_id: user.id,
-              ship_id: ship_id,
+              ship_info_id: ship_info_id,
               order_id: orders[count + 1].id,
               pay_status: false,
               created_at: new Date(),
@@ -47,7 +47,7 @@ module.exports = {
             },
             {
               user_id: user.id,
-              ship_id: ship_id,
+              ship_info_id: ship_info_id,
               order_id: orders[count + 2].id,
               pay_status: false,
               created_at: new Date(),
