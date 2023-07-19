@@ -24,7 +24,7 @@ router.delete(
   userController.deleteAddress
 )
 //* 購買紀錄
-router.get('/purchase')
+router.get('/orders', authenticated, isBuyer, userController.getUserOrders)
 
 //* seller login, register, profile
 router.post('/seller/login', userController.sellerLogin)

@@ -15,9 +15,7 @@ module.exports = {
       ship_info_id: {
         type: Sequelize.INTEGER
       },
-      order_id: {
-        type: Sequelize.INTEGER
-      },
+
       pay_status: {
         type: Sequelize.BOOLEAN
       },

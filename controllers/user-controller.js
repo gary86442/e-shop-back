@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const { User, Ship_info } = require('../models')
+const { User, Ship_info, Order_info, Order, Launched_p } = require('../models')
 const { getUser } = require('../helper/helper')
 const userController = {
   //* 消費者驗證
@@ -162,6 +162,26 @@ const userController = {
       return res
         .status(200)
         .json({ status: 'success', data: { ship_infos: deleteInfo } })
+    } catch (err) {
+      next(err)
+    }
+  },
+
+  //* 查看購買紀錄
+  getUserOrders: async (req, res, next) => {
+    try {
+      const currentUser = getUser(req)
+      const orders = await Order_info.findAll({
+        where: { user_id: currentUser.id },
+        order: [['createdAt', 'DESC']],
+        attributes: { exclude: ['userId', 'shipInfoId'] },
+        include: {
+          model: Order,
+          attributes: ['id', 'launched_p_id', 'launched_p_qty'],
+          include: { model: Launched_p, attributes: ['id', 'price'] }
+        }
+      })
+      return res.status(200).json({ status: 'success', data: { orders } })
     } catch (err) {
       next(err)
     }
