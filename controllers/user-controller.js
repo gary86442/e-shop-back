@@ -18,7 +18,7 @@ const userController = {
       if (name.length > 50) throw new Error('Name 欄位上限 50 字')
 
       // 待設定password, name, account
-      const user = await User.findOne({ where: { account } })
+      const user = await User.findOne({ where: { account, role: 'buyer' } })
       if (user) throw new Error('account已重複註冊')
       const hash = await bcrypt.hash(password, 10)
       const newUser = await User.create({
@@ -40,7 +40,7 @@ const userController = {
     try {
       const { account, password } = req.body
       if (!account | !password) throw new Error('帳號和密碼是必須要填寫！')
-      const user = await User.findOne({ where: { account } })
+      const user = await User.findOne({ where: { account, role: 'buyer' } })
       if (!user) throw new Error('使用者不存在')
       if (user.role === 'seller') throw new Error('請到店家登入頁面登入')
       if (!bcrypt.compareSync(password, user.password))
