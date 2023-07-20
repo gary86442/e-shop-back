@@ -97,7 +97,7 @@ const launched_pController = {
       checkShopKeeper(req)
       const { launchedPId } = req.params
       const launched_p = await Launched_p.findOne({
-        where: { id: launchedPId, is_selling: true },
+        WHERE: { id: launched_p_id, is_selling: true },
         attributes: { exclude: ['productId', 'launchedPId'] }
       })
       if (!launched_p) throw new Error('上架商品不存在')
