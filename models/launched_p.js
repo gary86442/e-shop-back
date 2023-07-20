@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Launched_p.hasMany(models.Order, { foreignKey: 'launchedPId' })
       Launched_p.belongsTo(models.Product, { foreignKey: 'productId' })
-      Launched_p.belongsTo(models.Cart, { foreignKey: 'launchedPId' })
+      Launched_p.hasMany(models.Cart, { foreignKey: 'launchedPId' })
     }
   }
   Launched_p.init(
