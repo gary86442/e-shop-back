@@ -8,7 +8,7 @@ const checkShopKeeper = async req => {
   if (shop.user_id !== currentUser.id)
     throw new Error('登入者不是店主，無法查看商品資訊')
 }
-const userController = {
+const productController = {
   //* 取得產品詳細資訊
   getProduct: async (req, res, next) => {
     try {
@@ -115,4 +115,4 @@ const userController = {
   }
 }
 
-module.exports = userController
+module.exports = productController
