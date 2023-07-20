@@ -7,5 +7,6 @@ router.get('/', cartController.getAllCart)
 router.post('/', cartController.newCart)
 router.put('/:cart_id', cartController.putCart)
 router.delete('/:cart_id', cartController.deleteCart)
+router.delete('/', cartController.emptyCart)
 
 module.exports = router

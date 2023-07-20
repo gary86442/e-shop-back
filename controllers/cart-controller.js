@@ -3,7 +3,7 @@ const { getUser } = require('../helper/helper')
 //* 檢查店主身分
 
 const cartController = {
-  //todo 瀏覽購物車內所有商品
+  //* 瀏覽購物車內所有商品
   getAllCart: async (req, res, next) => {
     try {
       const currentUser = getUser(req)
@@ -96,6 +96,18 @@ const cartController = {
       return res
         .status(200)
         .json({ status: 'success', data: { cart_product: delete_cart } })
+    } catch (err) {
+      next(err)
+    }
+  },
+  emptyCart: async (req, res, next) => {
+    try {
+      const currentUser = getUser(req)
+      const delete_count = await Cart.destroy({
+        where: { user_id: currentUser.id },
+        attributes: { exclude: ['userId', 'launchedPId'] }
+      })
+      return res.status(200).json({ status: 'success', data: { delete_count } })
     } catch (err) {
       next(err)
     }
