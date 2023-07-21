@@ -79,6 +79,7 @@ const launched_pController = {
         where: { is_selling: true },
         attributes: { exclude: ['productId', 'launchedPId'] }
       })
+      console.log(launched_p)
       const newLaunched_p = await launched_p.update({ price, stock })
       if (!launched_p) throw new Error('上架商品不存在')
 
