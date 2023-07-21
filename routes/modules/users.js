@@ -25,7 +25,12 @@ router.delete(
 )
 //* 購買紀錄
 router.get('/orders', authenticated, isBuyer, userController.getUserOrders)
-router.post('/orders', authenticated, isBuyer, userController.newOrder)
-router.delete('/orders', authenticated, isBuyer, userController.deleteOrder)
+router.post('/orders', authenticated, isBuyer, userController.newOrders)
+router.delete(
+  '/orders/:order_info_id',
+  authenticated,
+  isBuyer,
+  userController.deleteOrders
+)
 
 module.exports = router

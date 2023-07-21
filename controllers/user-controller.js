@@ -1,6 +1,13 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const { User, Ship_info, Order_info, Order, Launched_p } = require('../models')
+const {
+  User,
+  Ship_info,
+  Order_info,
+  Order,
+  Launched_p,
+  Sequelize
+} = require('../models')
 const { getUser } = require('../helper/helper')
 const userController = {
   //* 消費者驗證
@@ -188,7 +195,7 @@ const userController = {
   },
 
   //* 新增訂單
-  newOrder: async (req, res, next) => {
+  newOrders: async (req, res, next) => {
     try {
       const currentUser = getUser(req)
       const { ship_info_id, orders } = req.body
@@ -241,20 +248,42 @@ const userController = {
     }
   },
   //todo 取消訂單
-  deleteOrder: async (req, res, next) => {
+  deleteOrders: async (req, res, next) => {
     try {
       const currentUser = getUser(req)
-      const orders = await Order_info.findAll({
-        where: { user_id: currentUser.id },
-        order: [['createdAt', 'DESC']],
-        attributes: { exclude: ['userId', 'shipInfoId'] },
-        include: {
-          model: Order,
-          attributes: ['id', 'launched_p_id', 'launched_p_qty'],
-          include: { model: Launched_p, attributes: ['id', 'price'] }
-        }
+      const { order_info_id } = req.params
+      const order_info = await Order_info.findByPk(order_info_id, {
+        attributes: { exclude: ['userId', 'shipInfoId'] }
       })
-      return res.status(200).json({ status: 'success', data: { orders } })
+      if (!order_info) throw new Error('該訂單資訊不存在')
+      if (order_info.user_id !== currentUser.id)
+        throw new Error('該訂單資訊的使用者，與登入使用者不相符')
+      const orders = await Order.findAll({
+        where: { order_info_id },
+        attributes: { exclude: ['userId'] }
+      })
+      for (let order of orders) {
+        //還原庫存
+        const launched_p = await Launched_p.update(
+          {
+            stock: Sequelize.literal(`stock + ${order.launched_p_qty}`)
+          },
+          {
+            where: {
+              id: order.launched_p_id
+            }
+          }
+        )
+      }
+      const deleteOrderInfo = await order_info.destroy()
+      const deleteOrderCount = await Order.destroy({
+        where: { order_info_id },
+        attributes: { exclude: ['userId'] }
+      })
+      return res.status(200).json({
+        status: 'success',
+        data: { deleteOrderCount, deleteOrderInfo }
+      })
     } catch (err) {
       next(err)
     }
