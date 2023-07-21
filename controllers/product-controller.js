@@ -30,7 +30,7 @@ const productController = {
     try {
       checkShopKeeper(req)
       const products = await Product.findAll({
-        WHERE: { shop_id: req.body.shopId },
+        where: { shop_id: req.body.shopId },
         attributes: { exclude: ['shopId'] },
         order: [['updatedAt', 'DESC']]
       })
