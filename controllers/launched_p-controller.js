@@ -20,7 +20,6 @@ const launched_pController = {
           attributes: ['id', 'name', 'description', 'image', 'category_id']
         }
       })
-      console.log(launched_p)
       if (!launched_p.is_selling) throw new Error('商品不在架上')
       return res.status(200).json({ status: 'success', data: { launched_p } })
     } catch (err) {
@@ -31,7 +30,7 @@ const launched_pController = {
   getAllLaunched_ps: async (req, res, next) => {
     try {
       const Launched_ps = await Launched_p.findAll({
-        WHERE: { is_selling: true },
+        where: { is_selling: true },
         attributes: { exclude: ['productId', 'launchedPId'] },
         include: {
           model: Product,
@@ -54,7 +53,7 @@ const launched_pController = {
       //確認要上架商品屬於該店
       for (let product of launched_ps) {
         const existProduct = await Product.findByPk(product.product_id, {
-          WHERE: { shop_id: shopId }
+          where: { shop_id: shopId }
         })
         if (!existProduct)
           throw new Error(`${existProduct.name}，該店家沒有這項商品。`)
@@ -77,7 +76,7 @@ const launched_pController = {
       const { launchedPId } = req.params
 
       const launched_p = await Launched_p.findByPk(launchedPId, {
-        WHERE: { is_selling: true },
+        where: { is_selling: true },
         attributes: { exclude: ['productId', 'launchedPId'] }
       })
       const newLaunched_p = await launched_p.update({ price, stock })
@@ -97,7 +96,7 @@ const launched_pController = {
       checkShopKeeper(req)
       const { launchedPId } = req.params
       const launched_p = await Launched_p.findOne({
-        WHERE: { id: launched_p_id, is_selling: true },
+        where: { id: launched_p_id, is_selling: true },
         attributes: { exclude: ['productId', 'launchedPId'] }
       })
       if (!launched_p) throw new Error('上架商品不存在')
