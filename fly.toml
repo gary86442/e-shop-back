@@ -6,6 +6,11 @@ kill_timeout = 5
 mounts = []
 processes = []
 
+[deploy]
+  release_command = "npx sequelize db:migrate"
+  release_command = "npx sequelize db:seed:all"
+
+
 [env]
   PORT = "8080"
 
