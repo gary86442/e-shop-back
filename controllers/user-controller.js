@@ -1,6 +1,13 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const { User, Ship_info, Order_info, Order, Launched_p } = require('../models')
+const {
+  User,
+  Ship_info,
+  Order_info,
+  Order,
+  Launched_p,
+  Sequelize
+} = require('../models')
 const { getUser } = require('../helper/helper')
 const userController = {
   //* 消費者驗證
@@ -187,59 +194,95 @@ const userController = {
     }
   },
 
-  //* 賣家驗證
-
-  sellerRegister: async (req, res, next) => {
+  //* 新增訂單
+  newOrders: async (req, res, next) => {
     try {
-      const { name, account, email, password, checkPassword } = req.body
-      // Error: 密碼不相符
-      if (password !== checkPassword) throw new Error('密碼與確認密碼不同')
-      // Error: 必填項目
-      if (!account || account.trim() === '') throw new Error('帳號為必填項目')
-      if (!email || email.trim() === '') throw new Error('Email為必填項目')
-      if (!password || password.trim() === '') throw new Error('密碼為必填項目')
-      // Error: 字數限制
-      if (account.length > 20) throw new Error('Account 欄位上限 20 字')
-      if (name.length > 50) throw new Error('Name 欄位上限 50 字')
-
-      // 待設定password, name, account
-      const user = await User.findOne({ where: { account } })
-      if (user) throw new Error('account已重複註冊')
-      const hash = await bcrypt.hash(password, 10)
-      const newUser = await User.create({
-        name,
-        account,
-        email,
-        password: hash,
-        role: 'seller'
+      const currentUser = getUser(req)
+      const { ship_info_id, orders } = req.body
+      // 陣列 查詢上架商品資料庫以新增購買商品的陣列、檢查內容、 庫存數量是否足夠購買、如果足夠就建立ORDERS並回傳，有不足的篩選出來，並回傳前端，停止建立ORDERS。
+      orders.map(async order => {
+        const launched_p = await Launched_p.findByPk(order.launched_p_id, {
+          attributes: { exclude: ['launchedPId'] }
+        })
+        if (!launched_p)
+          throw new Error(`${order.launched_p_id}該上架商品不存在`)
+        if (!launched_p.is_selling)
+          throw new Error(`${order.launched_p_id}該上架商品已經下架`)
+        if (launched_p.stock < order.qty)
+          throw new Error(`${order.launched_p_id}庫存量不足`)
+      })
+      // 抓取SHIPINFO 驗證是否屬於使用者
+      const shipInfo = await Ship_info.findByPk(ship_info_id)
+      if (!shipInfo) throw new Error('該寄件資訊不存在')
+      if (shipInfo.user_id !== currentUser.id)
+        throw new Error('寄件資訊與登入使用者不符')
+      // 建立新的ORDERINFO
+      const newOrderInfo = await Order_info.create({
+        ship_info_id,
+        user_id: currentUser.id
       })
 
-      const userData = newUser.toJSON()
-      delete userData.password
-      return res.status(200).json({ status: 'success', user: userData })
+      //庫存減少
+      for (let order of orders) {
+        const launched_p = await Launched_p.findByPk(order.launched_p_id, {
+          attributes: { exclude: ['launchedPId'] }
+        })
+
+        const newStock = launched_p.stock - order.qty
+        await launched_p.update({ stock: newStock })
+      }
+      //建立新的訂單
+      const newOrders = await Order.bulkCreate(
+        orders.map(order => {
+          return {
+            launched_p_id: order.launched_p_id,
+            order_info_id: newOrderInfo.id,
+            launched_p_qty: order.qty
+          }
+        })
+      )
+
+      return res.status(200).json({ status: 'success', data: { newOrders } })
     } catch (err) {
       next(err)
     }
   },
-  // register: (req,res,next)={},
-  sellerLogin: async (req, res, next) => {
+  //todo 取消訂單
+  deleteOrders: async (req, res, next) => {
     try {
-      const { account, password } = req.body
-      if (!account | !password) throw new Error('帳號和密碼是必須要填寫！')
-      const user = await User.findOne({ where: { account } })
-      if (!user) throw new Error('使用者不存在')
-      if (user.role === 'buyer') throw new Error('請到消費者頁面登入')
-      if (!bcrypt.compareSync(password, user.password))
-        throw new Error('密碼錯誤')
-      const userData = user.toJSON()
-      delete userData.password
-      const token = jwt.sign(userData, process.env.JWT_SECRET, {
-        expiresIn: '7d'
+      const currentUser = getUser(req)
+      const { order_info_id } = req.params
+      const order_info = await Order_info.findByPk(order_info_id, {
+        attributes: { exclude: ['userId', 'shipInfoId'] }
+      })
+      if (!order_info) throw new Error('該訂單資訊不存在')
+      if (order_info.user_id !== currentUser.id)
+        throw new Error('該訂單資訊的使用者，與登入使用者不相符')
+      const orders = await Order.findAll({
+        where: { order_info_id },
+        attributes: { exclude: ['userId'] }
+      })
+      for (let order of orders) {
+        //還原庫存
+        const launched_p = await Launched_p.update(
+          {
+            stock: Sequelize.literal(`stock + ${order.launched_p_qty}`)
+          },
+          {
+            where: {
+              id: order.launched_p_id
+            }
+          }
+        )
+      }
+      const deleteOrderInfo = await order_info.destroy()
+      const deleteOrderCount = await Order.destroy({
+        where: { order_info_id },
+        attributes: { exclude: ['userId'] }
       })
       return res.status(200).json({
         status: 'success',
-        data: { token },
-        user: userData
+        data: { deleteOrderCount, deleteOrderInfo }
       })
     } catch (err) {
       next(err)

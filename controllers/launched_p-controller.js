@@ -94,7 +94,7 @@ const launched_pController = {
     try {
       // 確認店主
       checkShopKeeper(req)
-      const { launchedPId } = req.params
+      const { launched_p_id } = req.params
       const launched_p = await Launched_p.findOne({
         where: { id: launched_p_id, is_selling: true },
         attributes: { exclude: ['productId', 'launchedPId'] }
