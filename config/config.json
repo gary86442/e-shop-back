@@ -15,7 +15,7 @@
   },
   "production": {
     "username": "root",
-    "password": null,
+    "password": "password",
     "database": "some_db",
     "host": "some_db.internal",
     "dialect": "mysql"

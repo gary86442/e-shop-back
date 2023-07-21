@@ -7,8 +7,7 @@ mounts = []
 processes = []
 
 [deploy]
-  release_command = "npx sequelize db:migrate"
-  release_command = "npx sequelize db:seed:all"
+  release_command = "npx sequelize db:migrate npx sequelize db:seed:all"
 
 
 [env]
