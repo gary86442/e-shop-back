@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       user_id: DataTypes.INTEGER,
       ship_info_id: DataTypes.INTEGER,
-      pay_status: DataTypes.BOOLEAN
+      pay_status: { type: DataTypes.BOOLEAN, defaultValue: false }
     },
     {
       sequelize,

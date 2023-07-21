@@ -15,4 +15,7 @@ router.use('/api/v1/products', authenticated, isSeller, products)
 router.use('/api/v1/shops', shops)
 router.use('/api/v1/carts', authenticated, isBuyer, carts)
 
+router.get('/', (req, res) => {
+  res.send('hello world')
+})
 module.exports = router
