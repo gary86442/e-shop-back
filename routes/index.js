@@ -7,6 +7,7 @@ const sellers = require('./modules/sellers')
 const products = require('./modules/products')
 const carts = require('./modules/carts')
 const { authenticated, isBuyer, isSeller } = require('../middlewares/auth')
+const { apiErrorHandler } = require('../middlewares/error-handler')
 
 router.use('/api/v1/users', users)
 router.use('/api/v1/sellers', sellers)
@@ -15,7 +16,5 @@ router.use('/api/v1/products', authenticated, isSeller, products)
 router.use('/api/v1/shops', shops)
 router.use('/api/v1/carts', authenticated, isBuyer, carts)
 
-router.get('/', (req, res) => {
-  res.send('hello world')
-})
+router.use('/', apiErrorHandler)
 module.exports = router
