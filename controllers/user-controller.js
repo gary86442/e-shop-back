@@ -220,31 +220,7 @@ const userController = {
       const newOrderInfo = await Order_info.create({
         ship_info_id,
         user_id: currentUser.id
-      const currentUser = getUser(req)
-      const { ship_info_id, orders } = req.body
-      // 陣列 查詢上架商品資料庫以新增購買商品的陣列、檢查內容、 庫存數量是否足夠購買、如果足夠就建立ORDERS並回傳，有不足的篩選出來，並回傳前端，停止建立ORDERS。
-      orders.map(async order => {
-        const launched_p = await Launched_p.findByPk(order.launched_p_id, {
-          attributes: { exclude: ['launchedPId'] }
-        })
-        if (!launched_p)
-          throw new Error(`${order.launched_p_id}該上架商品不存在`)
-        if (!launched_p.is_selling)
-          throw new Error(`${order.launched_p_id}該上架商品已經下架`)
-        if (launched_p.stock < order.qty)
-          throw new Error(`${order.launched_p_id}庫存量不足`)
       })
-      // 抓取SHIPINFO 驗證是否屬於使用者
-      const shipInfo = await Ship_info.findByPk(ship_info_id)
-      if (!shipInfo) throw new Error('該寄件資訊不存在')
-      if (shipInfo.user_id !== currentUser.id)
-        throw new Error('寄件資訊與登入使用者不符')
-      // 建立新的ORDERINFO
-      const newOrderInfo = await Order_info.create({
-        ship_info_id,
-        user_id: currentUser.id
-      })
-
       //庫存減少
       for (let order of orders) {
         const launched_p = await Launched_p.findByPk(order.launched_p_id, {
@@ -270,7 +246,7 @@ const userController = {
       next(err)
     }
   },
-  //todo 取消訂單
+  //* 取消訂單
   deleteOrders: async (req, res, next) => {
     try {
       const currentUser = getUser(req)
