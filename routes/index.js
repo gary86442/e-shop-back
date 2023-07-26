@@ -8,6 +8,15 @@ const products = require('./modules/products')
 const carts = require('./modules/carts')
 const { authenticated, isBuyer, isSeller } = require('../middlewares/auth')
 const { apiErrorHandler } = require('../middlewares/error-handler')
+//* 允許所有網域訪問
+router.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  )
+  next()
+})
 
 router.use('/api/v1/users', users)
 router.use('/api/v1/sellers', sellers)
